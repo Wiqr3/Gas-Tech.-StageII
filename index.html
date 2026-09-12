@@ -108,7 +108,6 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);heigh
 </div>
 
 <div class="slides">
-
 <!-- LPG START -->
 <div class="slide active" id="lpg-ss0"><div class="i-eye start">🟢 LPG STARTUP</div><h1 class="i-title">تشغيل وحدة<br><span class="gs">غاز البترول المسال</span></h1><p class="i-sub">LPG Unit — Startup</p><div class="i-note start"><span>⚡</span><span>اتبع الخطوات بالتسلسل الصحيح</span></div></div>
 <div class="slide" id="lpg-ss1"><div class="bgnum">١</div><div class="s-meta">الخطوة ١ من ١١</div><h2 class="s-head">تفعيل نظام السلامة SIS</h2><div class="tags"><span class="tag tr">🔴 SIS</span></div><p class="desc">حوّل نظام السلامة <strong>SIS</strong> إلى الحالة الحمراء.</p></div>
@@ -235,6 +234,8 @@ const D={
 };
 
 let unit='lpg',mode='start',cur=0,auto=false,timer=null,synth=window.speechSynthesis;
+let currentAudio = null;
+
 const gi=()=>D[unit][mode].ids;
 const gs=()=>D[unit][mode].sc;
 
@@ -284,24 +285,65 @@ function stopAuto(){auto=false;clearTimeout(timer);stopS();document.getElementBy
 function stopAll(){stopAuto();}
 
 function speak(i){
-  stopS();const sc=gs();if(!sc[i])return;
-  const u=new SpeechSynthesisUtterance(sc[i]);u.lang='ar-SA';u.rate=0.88;
-  const sel=document.getElementById('vsel');const vs=synth.getVoices();
-  const v=vs.find(x=>x.name===sel.options[sel.selectedIndex]?.dataset?.name);if(v)u.voice=v;
-  const wv=document.getElementById('wv');
-  u.onstart=()=>wv.classList.add('on');
-  u.onend=()=>{wv.classList.remove('on');if(auto){timer=setTimeout(()=>{if(cur<gi().length-1){show(cur+1);speak(cur);}else stopAuto();},700);}};
+  stopS();
+  const sc=gs();
+  if(!sc[i]) return;
+  
+  const text = sc[i];
+  const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=ar&client=tw-ob`;
+  currentAudio = new Audio(url);
+  
+  const wv = document.getElementById('wv');
+  
+  currentAudio.onplay = () => wv.classList.add('on');
+  currentAudio.onended = () => {
+     wv.classList.remove('on');
+     if(auto){
+         timer = setTimeout(() => {
+             if(cur < gi().length - 1){ goTo(cur+1); }
+             else { stopAuto(); }
+         }, 700);
+     }
+  };
+  
+  currentAudio.onerror = () => { fallbackLocalTTS(text, i); };
+  
+  currentAudio.play().catch(e => { fallbackLocalTTS(text, i); });
+}
+
+function fallbackLocalTTS(text, i) {
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ar-SA';
+  u.rate = 0.88;
+  const wv = document.getElementById('wv');
+  u.onstart = () => wv.classList.add('on');
+  u.onend = () => {
+     wv.classList.remove('on');
+     if(auto){
+         timer = setTimeout(() => {
+             if(cur < gi().length - 1){ goTo(cur+1); }
+             else { stopAuto(); }
+         }, 700);
+     }
+  };
   synth.speak(u);
 }
 
-function stopS(){synth.cancel();document.getElementById('wv').classList.remove('on');clearTimeout(timer);}
+function stopS(){
+  if(currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+  }
+  synth.cancel();
+  document.getElementById('wv').classList.remove('on');
+  clearTimeout(timer);
+}
 
 function loadVoices(){
-  const sel=document.getElementById('vsel');const vs=synth.getVoices();sel.innerHTML='';
-  const ar=vs.filter(v=>v.lang.startsWith('ar'));
-  (ar.length?ar:vs).forEach(v=>{const o=document.createElement('option');o.value=v.name;o.dataset.name=v.name;o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o);});
+  const sel=document.getElementById('vsel');
+  sel.innerHTML='<option>صوت Google (سحابي)</option>';
 }
-synth.onvoiceschanged=loadVoices;loadVoices();
+loadVoices();
 
 document.addEventListener('keydown',e=>{
   if(e.key==='ArrowRight')next();
