@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>وحدات التشغيل والإيقاف</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060a14;--text:#f0f4ff;--muted:#8892a4;--border:rgba(255,255,255,0.07);--card:rgba(255,255,255,0.04);--g1:#10b981;--g2:#06b6d4;--r1:#ef4444;--r2:#f97316}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.bg-grid{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:55px 55px}
+.bg-glow{position:fixed;inset:0;z-index:0;transition:background 0.8s}
+.bg-glow.start{background:radial-gradient(ellipse 55% 55% at 10% 50%,rgba(16,185,129,0.07) 0%,transparent 70%)}
+.bg-glow.stop{background:radial-gradient(ellipse 55% 55% at 10% 50%,rgba(239,68,68,0.07) 0%,transparent 70%)}
+.hdr{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;gap:8px;padding:9px 16px;background:rgba(6,10,20,0.93);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.unit-btn{padding:6px 14px;border-radius:50px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.3s}
+.unit-btn.active{background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.4);color:#93c5fd}
+.div{width:1px;height:24px;background:var(--border)}
+.mode-btn{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:50px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.3s}
+.mode-btn.start.active{background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.4);color:#6ee7b7}
+.mode-btn.stop.active{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:#fca5a5}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:7px}
+.hdr-r label{font-size:11px;color:var(--muted)}
+.hdr-r select{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text);font-family:'Cairo',sans-serif;font-size:11px;padding:4px 10px;border-radius:8px;outline:none;max-width:150px}
+.slides{position:relative;z-index:10;width:100vw;height:100vh;padding-top:56px}
+.slide{position:absolute;inset:0;top:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 32px;opacity:0;pointer-events:none;transition:opacity 0.5s;overflow-y:auto}
+.slide.active{opacity:1;pointer-events:all}
+.i-eye{font-size:11px;font-weight:700;letter-spacing:3px;padding:5px 16px;border-radius:20px;margin-bottom:14px;animation:fu 0.7s ease 0.2s both}
+.i-eye.start{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7}
+.i-eye.stop{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5}
+.i-title{font-size:clamp(24px,5vw,54px);font-weight:900;text-align:center;line-height:1.2;animation:fu 0.7s ease 0.35s both}
+.gs{background:linear-gradient(135deg,var(--g1),var(--g2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.gr{background:linear-gradient(135deg,var(--r1),var(--r2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.i-sub{font-size:13px;color:var(--muted);margin-top:8px;animation:fu 0.7s ease 0.5s both}
+.i-note{margin-top:18px;max-width:500px;padding:11px 18px;border-radius:12px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;animation:fu 0.7s ease 0.65s both}
+.i-note.start{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:#a7f3d0}
+.i-note.stop{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#fecaca}
+.s-meta{font-size:11px;font-weight:700;letter-spacing:3px;color:var(--muted);margin-bottom:6px;animation:fu 0.5s ease 0.05s both}
+.s-head{font-size:clamp(15px,2.5vw,32px);font-weight:900;text-align:center;margin-bottom:13px;animation:fu 0.5s ease 0.15s both}
+.tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:13px;animation:fu 0.5s ease 0.2s both}
+.tag{padding:4px 10px;border-radius:7px;font-size:11px;font-weight:700;font-family:'Courier New',monospace;border:1px solid}
+.tg{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);color:#6ee7b7}
+.tc{background:rgba(6,182,212,0.1);border-color:rgba(6,182,212,0.3);color:#67e8f9}
+.tr{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:#fca5a5}
+.ty{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#fcd34d}
+.tb{background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);color:#93c5fd}
+.tm{background:rgba(148,163,184,0.08);border-color:rgba(148,163,184,0.2);color:#94a3b8}
+.tp{background:rgba(168,85,247,0.1);border-color:rgba(168,85,247,0.3);color:#d8b4fe}
+.acts{list-style:none;max-width:720px;width:100%;animation:fu 0.5s ease 0.25s both}
+.acts li{display:flex;align-items:flex-start;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 13px;margin-bottom:6px;font-size:clamp(11px,1.3vw,14px);line-height:1.7}
+.bul{width:22px;height:22px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;margin-top:2px}
+.bg{background:rgba(16,185,129,0.2);color:var(--g1)}.bc{background:rgba(6,182,212,0.2);color:var(--g2)}
+.br{background:rgba(239,68,68,0.2);color:var(--r1)}.by{background:rgba(245,158,11,0.2);color:#f59e0b}
+.bb{background:rgba(59,130,246,0.2);color:#3b82f6}.bp{background:rgba(168,85,247,0.2);color:#a855f7}
+.desc{max-width:700px;text-align:center;font-size:clamp(12px,1.5vw,16px);line-height:2;color:#cbd5e1;animation:fu 0.5s ease 0.25s both}
+.wait{display:flex;align-items:center;gap:10px;padding:9px 15px;border-radius:10px;font-size:12px;font-weight:600;max-width:600px;margin-bottom:10px;animation:fu 0.5s ease 0.22s both}
+.wait.cyan{background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.25);color:#67e8f9}
+.wait.gold{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);color:#fcd34d}
+.wait.red{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#fca5a5}
+.wdot{width:8px;height:8px;border-radius:50%;animation:pls 1.4s infinite}
+.wdot.c{background:#06b6d4}.wdot.g{background:#f59e0b}.wdot.r{background:#ef4444}
+@keyframes pls{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.3;transform:scale(0.6)}}
+.bgnum{position:absolute;top:-10px;left:16px;font-size:130px;font-weight:900;color:rgba(255,255,255,0.018);pointer-events:none;line-height:1}
+.o-icon{width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:16px;animation:si 0.6s ease 0.2s both}
+.o-icon.start{background:rgba(16,185,129,0.15);border:2px solid rgba(16,185,129,0.4)}
+.o-icon.stop{background:rgba(239,68,68,0.15);border:2px solid rgba(239,68,68,0.4)}
+.o-title{font-size:clamp(20px,4vw,44px);font-weight:900;text-align:center;animation:fu 0.6s ease 0.35s both}
+.o-sub{color:var(--muted);font-size:13px;margin-top:7px;text-align:center;animation:fu 0.6s ease 0.5s both}
+.o-pills{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-top:18px;animation:fu 0.6s ease 0.6s both}
+.opill{background:var(--card);border:1px solid var(--border);border-radius:50px;padding:5px 13px;font-size:11px;font-weight:600;color:var(--muted)}
+.prog{position:fixed;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.05);z-index:200}
+.pf{height:100%;transition:width 0.4s,background 0.8s}
+.pf.start{background:linear-gradient(90deg,var(--g1),var(--g2))}
+.pf.stop{background:linear-gradient(90deg,var(--r1),var(--r2))}
+.dots{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:4px;z-index:200;flex-wrap:wrap;max-width:75vw;justify-content:center}
+.dn{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.18);cursor:pointer;transition:all 0.3s}
+.dn.act-start{background:var(--g1);width:16px;border-radius:3px}
+.dn.act-stop{background:var(--r1);width:16px;border-radius:3px}
+.ctrl{position:fixed;bottom:6px;right:16px;display:flex;gap:6px;z-index:200}
+.cb{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:var(--text);font-family:'Cairo',sans-serif;font-size:11px;font-weight:600;padding:5px 11px;border-radius:7px;cursor:pointer;transition:all 0.2s}
+.cb:hover{background:rgba(255,255,255,0.13)}
+.cb.play-start{background:linear-gradient(135deg,var(--g1),var(--g2));border-color:transparent}
+.cb.play-stop{background:linear-gradient(135deg,var(--r1),var(--r2));border-color:transparent}
+.wave{position:fixed;top:65px;left:16px;display:none;align-items:center;gap:3px;z-index:200}
+.wave.on{display:flex}
+.wave span{display:block;width:3px;border-radius:2px;animation:wv 0.8s ease-in-out infinite}
+.wave.start span{background:var(--g2)}.wave.stop span{background:var(--r2)}
+.wave span:nth-child(1){height:7px}.wave span:nth-child(2){height:14px;animation-delay:.1s}.wave span:nth-child(3){height:9px;animation-delay:.2s}.wave span:nth-child(4){height:18px;animation-delay:.3s}.wave span:nth-child(5){height:11px;animation-delay:.15s}
+@keyframes wv{0%,100%{transform:scaleY(0.4)}50%{transform:scaleY(1)}}
+@keyframes fu{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes si{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow start" id="bgGlow"></div>
+<div class="wave start" id="wv"><span></span><span></span><span></span><span></span><span></span></div>
+
+<div class="hdr">
+  <button class="unit-btn active" id="btn-lpg" onclick="setUnit('lpg')">⚙️ LPG</button>
+  <button class="unit-btn" id="btn-amine" onclick="setUnit('amine')">🧪 الأمين</button>
+  <button class="unit-btn" id="btn-lng" onclick="setUnit('lng')">❄️ LNG</button>
+  <div class="div"></div>
+  <button class="mode-btn start active" id="btnStart" onclick="setMode('start')">🟢 تشغيل</button>
+  <button class="mode-btn stop" id="btnStop" onclick="setMode('stop')">🔴 إيقاف</button>
+  <div class="hdr-r"><label>الصوت:</label><select id="vsel"></select></div>
+</div>
+
+<div class="slides">
+<!-- LPG START -->
+<div class="slide active" id="lpg-ss0"><div class="i-eye start">🟢 LPG STARTUP</div><h1 class="i-title">تشغيل وحدة<br><span class="gs">غاز البترول المسال</span></h1><p class="i-sub">LPG Unit — Startup</p><div class="i-note start"><span>⚡</span><span>اتبع الخطوات بالتسلسل الصحيح</span></div></div>
+<div class="slide" id="lpg-ss1"><div class="bgnum">١</div><div class="s-meta">الخطوة ١ من ١١</div><h2 class="s-head">تفعيل نظام السلامة SIS</h2><div class="tags"><span class="tag tr">🔴 SIS</span></div><p class="desc">حوّل نظام السلامة <strong>SIS</strong> إلى الحالة الحمراء.</p></div>
+<div class="slide" id="lpg-ss2"><div class="bgnum">٢</div><div class="s-meta">الخطوة ٢ من ١١</div><h2 class="s-head">التحقق من إغلاق SDV و BDV</h2><div class="tags"><span class="tag tb">SDV</span><span class="tag tb">BDV</span><span class="tag tm">جميع الأبراج</span></div><p class="desc">تأكد من إغلاق جميع صمامات <strong>SDV</strong> و<strong>BDV</strong> لجميع الأبراج.</p></div>
+<div class="slide" id="lpg-ss3"><div class="bgnum">٣</div><div class="s-meta">الخطوة ٣ من ١١</div><h2 class="s-head">ضبط مسيطرات TIC للمسخّنة على 0%</h2><div class="tags"><span class="tag ty">TIC — Reboiler — 0%</span></div><p class="desc">تأكد من أن مسيطرات <strong>TIC</strong> الخاصة بمسخّنات الأبراج على فتحة <strong>0%</strong>.</p></div>
+<div class="slide" id="lpg-ss4"><div class="bgnum">٤</div><div class="s-meta">الخطوة ٤ من ١١</div><h2 class="s-head">ضبط مسيطرات FIC على Manual و 100%</h2><div class="tags"><span class="tag ty">FIC — Manual — 100%</span></div><p class="desc">تأكد من أن مسيطرات <strong>FIC</strong> المجاورة للمضخات على <strong>Manual</strong> وفتحة <strong>100%</strong>.</p></div>
+<div class="slide" id="lpg-ss5"><div class="bgnum">٥</div><div class="s-meta">الخطوة ٥ من ١١</div><h2 class="s-head">تشغيل المضخة ووضعها أوتوماتيك</h2><div class="tags"><span class="tag tg">تشغيل المضخة</span><span class="tag tc">FIC — Auto</span></div><ul class="acts"><li><span class="bul bg">١</span>شغّل المضخة المرتبطة بـ <strong>FIC</strong></li><li><span class="bul bc">٢</span>حوّل <strong>FIC</strong> إلى <strong>أوتوماتيكي</strong> بعد استقرار التدفق</li></ul></div>
+<div class="slide" id="lpg-ss6"><div class="bgnum">٦</div><div class="s-meta">الخطوة ٦ من ١١</div><h2 class="s-head">تشغيل المبردات الهوائية</h2><div class="tags"><span class="tag tc">Air Coolers — جميع الأبراج</span></div><p class="desc">شغّل <strong>المبردات الهوائية</strong> لجميع الأبراج.</p></div>
+<div class="slide" id="lpg-ss7"><div class="bgnum">٧</div><div class="s-meta">الخطوة ٧ من ١١</div><h2 class="s-head">فتح صمامات SDV للخروج والتصدير</h2><div class="tags"><span class="tag tg">SDV الخروج</span><span class="tag tg">SDV التصدير</span></div><p class="desc">افتح جميع صمامات <strong>SDV</strong> لخطوط الخروج والتصدير لجميع الأبراج.</p></div>
+<div class="slide" id="lpg-ss8"><div class="bgnum">٨</div><div class="s-meta">الخطوة ٨ من ١١</div><h2 class="s-head">انتظار إغلاق PCV لجميع الأبراج</h2><div class="tags"><span class="tag tc">PCV — جميع الأبراج</span></div><div class="wait cyan"><span class="wdot c"></span>انتظر إغلاق جميع PCV تلقائياً</div></div>
+<div class="slide" id="lpg-ss9"><div class="bgnum">٩</div><div class="s-meta">الخطوة ٩ من ١١</div><h2 class="s-head">فتح صمامات مادة التغذية</h2><div class="tags"><span class="tag tg">SDV-66</span><span class="tag tg">SDV-67</span></div><ul class="acts"><li><span class="bul bg">١</span>افتح <strong>SDV-66</strong></li><li><span class="bul bg">٢</span>افتح <strong>SDV-67</strong></li></ul></div>
+<div class="slide" id="lpg-ss10"><div class="bgnum">١٠</div><div class="s-meta">الخطوة ١٠ من ١١</div><h2 class="s-head">تحويل جميع TIC إلى أوتوماتيك</h2><div class="tags"><span class="tag tc">TIC — Auto — جميع الأبراج</span></div><p class="desc">حوّل جميع مسيطرات <strong>TIC</strong> إلى الوضع <strong>أوتوماتيكي</strong>.</p></div>
+<div class="slide" id="lpg-ss11"><div class="bgnum">١١</div><div class="s-meta">الخطوة ١١ من ١١</div><h2 class="s-head">تحويل SIS إلى الأخضر</h2><div class="tags"><span class="tag tg">🟢 SIS</span></div><div class="wait cyan"><span class="wdot c"></span>انتظر استقرار الوحدة الكامل</div><p class="desc">حوّل <strong>SIS</strong> إلى <strong>الحالة الخضراء</strong>.</p></div>
+<div class="slide" id="lpg-ssout"><div class="o-icon start">✅</div><h1 class="o-title">تمّ تشغيل<br><span class="gs">وحدة LPG</span></h1><p class="o-sub">Startup Complete</p><div class="o-pills"><span class="opill">🟢 SIS أخضر</span><span class="opill">📋 ١١ خطوة</span><span class="opill">⚙️ LPG</span></div></div>
+
+<!-- LPG STOP -->
+<div class="slide" id="lpg-sp0"><div class="i-eye stop">🔴 LPG SHUTDOWN</div><h1 class="i-title">إيقاف وحدة<br><span class="gr">غاز البترول المسال</span></h1><p class="i-sub">LPG Unit — Shutdown</p><div class="i-note stop"><span>⚠️</span><span>الالتزام بتسلسل الخطوات للسلامة التشغيلية</span></div></div>
+<div class="slide" id="lpg-sp1"><div class="bgnum">١</div><div class="s-meta">الخطوة ١ من ٧</div><h2 class="s-head">تفعيل نظام السلامة SIS</h2><div class="tags"><span class="tag tr">🔴 SIS</span></div><p class="desc">حوّل <strong>SIS</strong> إلى الحالة الحمراء.</p></div>
+<div class="slide" id="lpg-sp2"><div class="bgnum">٢</div><div class="s-meta">الخطوة ٢ من ٧</div><h2 class="s-head">إغلاق صمامات مادة التغذية</h2><div class="tags"><span class="tag tr">SDV-66</span><span class="tag tr">SDV-67</span></div><ul class="acts"><li><span class="bul br">١</span>أغلق <strong>SDV-66</strong></li><li><span class="bul br">٢</span>أغلق <strong>SDV-67</strong></li></ul></div>
+<div class="slide" id="lpg-sp3"><div class="bgnum">٣</div><div class="s-meta">الخطوة ٣ من ٧</div><h2 class="s-head">التحكم في FIC-11 وإيقاف المضخة</h2><div class="tags"><span class="tag ty">FIC-11 — Manual — 100%</span></div><ul class="acts"><li><span class="bul by">١</span><strong>FIC-11</strong> إلى <strong>Manual</strong> وافتح الفتحة <strong>100%</strong></li><li><span class="bul br">٢</span>أوقف المضخة</li></ul></div>
+<div class="slide" id="lpg-sp4"><div class="bgnum">٤</div><div class="s-meta">الخطوة ٤ من ٧</div><h2 class="s-head">LCV-15 ثم SDV-16 والتحكم في TIC-26</h2><div class="tags"><span class="tag tc">LCV-15</span><span class="tag tr">SDV-16</span><span class="tag ty">TIC-26 — Manual — 0%</span></div><ul class="acts"><li><span class="bul br">١</span>بعد إغلاق <strong>LCV-15</strong> — أغلق <strong>SDV-16</strong></li><li><span class="bul by">٢</span><strong>TIC-26</strong> على <strong>Manual — 0%</strong></li></ul></div>
+<div class="slide" id="lpg-sp5"><div class="bgnum">٥</div><div class="s-meta">الخطوة ٥ من ٧</div><h2 class="s-head">انتظار LCV-28 ثم SDV-38 والتحكم في TIC-39</h2><div class="tags"><span class="tag tc">LCV-28</span><span class="tag tr">SDV-38</span><span class="tag ty">TIC-39 — 0%</span></div><div class="wait gold"><span class="wdot g"></span>انتظر إغلاق LCV-28 تلقائياً</div><ul class="acts"><li><span class="bul br">١</span>أغلق <strong>SDV-38</strong></li><li><span class="bul by">٢</span><strong>TIC-39</strong> على <strong>Manual — 0%</strong></li></ul></div>
+<div class="slide" id="lpg-sp6"><div class="bgnum">٦</div><div class="s-meta">الخطوة ٦ من ٧</div><h2 class="s-head">انتظار PCV-27 ثم FIC-32 والمضخة وSDV-35</h2><div class="tags"><span class="tag tc">PCV-27</span><span class="tag ty">FIC-32 — 100%</span><span class="tag tr">SDV-35</span></div><div class="wait gold"><span class="wdot g"></span>انتظر إغلاق PCV-27</div><ul class="acts"><li><span class="bul by">١</span><strong>FIC-32</strong> على <strong>Manual — 100%</strong></li><li><span class="bul br">٢</span>أوقف المضخة</li><li><span class="bul br">٣</span>أغلق <strong>SDV-35</strong></li></ul></div>
+<div class="slide" id="lpg-sp7"><div class="bgnum">٧</div><div class="s-meta">الخطوة ٧ من ٧</div><h2 class="s-head">الأبراج المتبقية</h2><div class="tags"><span class="tag tm">نفس الخطة</span></div><p class="desc">طبّق نفس الخطة على الأبراج المتبقية مع مراعاة اختلاف أرقام الصمامات.</p></div>
+<div class="slide" id="lpg-spout"><div class="o-icon stop">🔴</div><h1 class="o-title">تمّ إيقاف<br><span class="gr">وحدة LPG</span></h1><p class="o-sub">Shutdown Complete</p><div class="o-pills"><span class="opill">🔴 SIS أحمر</span><span class="opill">📋 ٧ خطوات</span><span class="opill">⚙️ LPG</span></div></div>
+
+<!-- AMINE START -->
+<div class="slide" id="amine-ss0"><div class="i-eye start">🟢 AMINE STARTUP</div><h1 class="i-title">تشغيل وحدة<br><span class="gs">الأمين</span></h1><p class="i-sub">Amine Unit — Startup</p><div class="i-note start"><span>⚡</span><span>اتبع الخطوات بالتسلسل الصحيح</span></div></div>
+<div class="slide" id="amine-ss1"><div class="bgnum">١</div><div class="s-meta">الخطوة ١ من ١٩</div><h2 class="s-head">تفعيل نظام السلامة SIS</h2><div class="tags"><span class="tag tr">🔴 SIS</span></div><p class="desc">حوّل <strong>SIS</strong> إلى الحالة الحمراء.</p></div>
+<div class="slide" id="amine-ss2"><div class="bgnum">٢</div><div class="s-meta">الخطوة ٢ من ١٩</div><h2 class="s-head">التحقق من معدل جريان المادة المغذية</h2><div class="tags"><span class="tag tg">&lt; 30 tn/hr</span></div><p class="desc">تأكد من أن معدل المادة المغذية أقل من <strong>30 طن/ساعة</strong>.</p></div>
+<div class="slide" id="amine-ss3"><div class="bgnum">٣</div><div class="s-meta">الخطوة ٣ من ١٩</div><h2 class="s-head">التحقق من صمامات SDV و BDV</h2><div class="tags"><span class="tag tb">SDV</span><span class="tag tb">BDV</span></div><p class="desc">تأكد من إغلاق جميع <strong>SDV</strong> و<strong>BDV</strong> في جميع الشاشات.</p></div>
+<div class="slide" id="amine-ss4"><div class="bgnum">٤</div><div class="s-meta">الخطوة ٤ من ١٩</div><h2 class="s-head">ضبط مسيطرات المستوى والجريان</h2><div class="tags"><span class="tag ty">LIC — Manual — 0%</span><span class="tag ty">FIC — Manual — 0%</span><span class="tag tg">PIC — Auto</span></div><ul class="acts"><li><span class="bul by">١</span>جميع <strong>LIC</strong> على <strong>Manual — 0%</strong></li><li><span class="bul by">٢</span>جميع <strong>FIC</strong> على <strong>Manual — 0%</strong></li><li><span class="bul bg">٣</span>مسيطرات الضغط <strong>PIC</strong> تبقى <strong>أوتوماتيكية</strong></li></ul></div>
+<div class="slide" id="amine-ss5"><div class="bgnum">٥</div><div class="s-meta">الخطوة ٥ من ١٩</div><h2 class="s-head">فتح SDV9 وتشغيل FIC4</h2><div class="tags"><span class="tag tg">SDV9</span><span class="tag tc">FIC4 — Auto — 20 tn/hr</span></div><ul class="acts"><li><span class="bul bg">١</span>افتح <strong>SDV9</strong></li><li><span class="bul bc">٢</span><strong>FIC4</strong> أوتوماتيكي بـ <strong>20 tn/hr</strong></li></ul></div>
+<div class="slide" id="amine-ss6"><div class="bgnum">٦</div><div class="s-meta">الخطوة ٦ من ١٩</div><h2 class="s-head">انتظار Amine Flash Tank 60%</h2><div class="tags"><span class="tag tc">Flash Tank — 60%</span></div><div class="wait cyan"><span class="wdot c"></span>انتظر وصول المستوى إلى 60%</div><ul class="acts"><li><span class="bul by">١</span>ضع <strong>FIC4</strong> على <strong>Manual — 0%</strong></li></ul></div>
+<div class="slide" id="amine-ss7"><div class="bgnum">٧</div><div class="s-meta">الخطوة ٧ من ١٩</div><h2 class="s-head">فتح SDV7 وضبط LIC5</h2><div class="tags"><span class="tag tg">SDV7</span><span class="tag ty">LIC5 — Manual</span><span class="tag tg">20 tn/hr</span></div><ul class="acts"><li><span class="bul bg">١</span>افتح <strong>SDV7</strong></li><li><span class="bul by">٢</span><strong>LIC5</strong> على <strong>Manual — 0%</strong></li><li><span class="bul by">٣</span>اضبط نقطة تحديد معدل جريان الأمين على <strong>20 tn/hr</strong></li></ul></div>
+<div class="slide" id="amine-ss8"><div class="bgnum">٨</div><div class="s-meta">الخطوة ٨ من ١٩</div><h2 class="s-head">تحويل LIC5 إلى أوتوماتيك 50%</h2><div class="tags"><span class="tag tc">LIC5 — Auto — 50%</span></div><p class="desc">ضع <strong>LIC5</strong> على <strong>أوتوماتيكي</strong> مع فتحة <strong>50%</strong>.</p></div>
+<div class="slide" id="amine-ss9"><div class="bgnum">٩</div><div class="s-meta">الخطوة ٩ من ١٩</div><h2 class="s-head">تشغيل المضخة عبر FIC7 و SDV10</h2><div class="tags"><span class="tag ty">FIC7 — Manual — 0%</span><span class="tag tg">SDV10</span><span class="tag tc">FIC7 — Auto</span></div><ul class="acts"><li><span class="bul by">١</span><strong>FIC7</strong> على <strong>Manual — 0%</strong></li><li><span class="bul bg">٢</span>افتح <strong>SDV10</strong></li><li><span class="bul bg">٣</span>شغّل المضخة</li><li><span class="bul bc">٤</span><strong>FIC7</strong> إلى <strong>أوتوماتيكي</strong></li></ul></div>
+<div class="slide" id="amine-ss10"><div class="bgnum">١٠</div><div class="s-meta">الخطوة ١٠ من ١٩</div><h2 class="s-head">فتح SDV8 وFIC3 وBypass MV1 وSDV2</h2><div class="tags"><span class="tag tg">SDV8</span><span class="tag tc">FIC3 — 10 tn/hr</span><span class="tag tb">MV1</span><span class="tag tg">SDV2</span></div><ul class="acts"><li><span class="bul bg">١</span>افتح <strong>SDV8</strong> وضع <strong>FIC3</strong> أوتو بـ <strong>10 tn/hr</strong></li><li><span class="bul bb">٢</span>افتح <strong>Bypass MV1</strong></li><li><span class="bul bg">٣</span>افتح <strong>SDV2</strong></li></ul></div>
+<div class="slide" id="amine-ss11"><div class="bgnum">١١</div><div class="s-meta">الخطوة ١١ من ١٩</div><h2 class="s-head">ضبط PIC8 وفتح SDV4 وFIC2</h2><div class="tags"><span class="tag ty">PIC8 — 41 bar</span><span class="tag tg">SDV4</span><span class="tag tc">FIC2 — 20 tn/hr</span></div><div class="wait gold"><span class="wdot g"></span>اضبط PIC8 على 41 bar وانتظر تساوي الضغط</div><ul class="acts"><li><span class="bul bg">١</span>افتح <strong>SDV4</strong></li><li><span class="bul bc">٢</span><strong>FIC2</strong> على <strong>20 tn/hr</strong></li></ul></div>
+<div class="slide" id="amine-ss12"><div class="bgnum">١٢</div><div class="s-meta">الخطوة ١٢ من ١٩</div><h2 class="s-head">فتح SDV3 وزيادة معدل الأمين</h2><div class="tags"><span class="tag tg">SDV3</span><span class="tag tc">LIC2 — Auto</span><span class="tag tg">حتى 300 tn/hr</span></div><ul class="acts"><li><span class="bul bg">١</span>افتح <strong>SDV3</strong></li><li><span class="bul bc">٢</span><strong>LIC2</strong> أوتوماتيكي</li><li><span class="bul bg">٣</span>زِد <strong>10 tn/hr كل دقيقة</strong> حتى <strong>300 tn/hr</strong></li></ul></div>
+<div class="slide" id="amine-ss13"><div class="bgnum">١٣</div><div class="s-meta">الخطوة ١٣ من ١٩</div><h2 class="s-head">تشغيل TIC3 والمبردات وSDV11</h2><div class="tags"><span class="tag tc">TIC3 — Auto</span><span class="tag tg">Air Coolers</span><span class="tag tg">SDV11</span></div><ul class="acts"><li><span class="bul bc">١</span><strong>TIC3</strong> أوتوماتيكي</li><li><span class="bul bg">٢</span>شغّل <strong>المبردات الهوائية</strong></li><li><span class="bul bg">٣</span>افتح <strong>SDV11</strong></li></ul></div>
+<div class="slide" id="amine-ss14"><div class="bgnum">١٤</div><div class="s-meta">الخطوة ١٤ من ١٩</div><h2 class="s-head">ضبط TIC2 وFIC5 Cascade</h2><div class="tags"><span class="tag ty">TIC2 — Manual — 0%</span><span class="tag tc">FIC5 — Cascade</span></div><ul class="acts"><li><span class="bul by">١</span><strong>TIC2</strong> على <strong>Manual — 0%</strong></li><li><span class="bul bc">٢</span><strong>FIC5</strong> على <strong>Cascade</strong></li></ul></div>
+<div class="slide" id="amine-ss15"><div class="bgnum">١٥</div><div class="s-meta">الخطوة ١٥ من ١٩</div><h2 class="s-head">فتح SDV12 وتشغيل FIC6 والمضخة</h2><div class="tags"><span class="tag tg">SDV12</span><span class="tag tc">FIC6 — Auto</span><span class="tag tg">المضخة</span></div><ul class="acts"><li><span class="bul bg">١</span>افتح <strong>SDV12</strong></li><li><span class="bul bc">٢</span><strong>FIC6</strong> أوتوماتيكي</li><li><span class="bul bg">٣</span>شغّل المضخة</li></ul></div>
+<div class="slide" id="amine-ss16"><div class="bgnum">١٦</div><div class="s-meta">الخطوة ١٦ من ١٩</div><h2 class="s-head">تحويل TIC2 و LIC6 و TIC1 إلى أوتوماتيك</h2><div class="tags"><span class="tag tc">TIC2</span><span class="tag tc">LIC6</span><span class="tag tc">TIC1</span></div><p class="desc">ضع <strong>TIC2</strong> ثم <strong>LIC6</strong> ثم <strong>TIC1</strong> على وضع <strong>أوتوماتيكي</strong>.</p></div>
+<div class="slide" id="amine-ss17"><div class="bgnum">١٧</div><div class="s-meta">الخطوة ١٧ من ١٩</div><h2 class="s-head">فتح SDV5 وLIC3 وSDV1 وإغلاق MV1</h2><div class="tags"><span class="tag tg">SDV5</span><span class="tag tc">LIC3</span><span class="tag tg">SDV1</span><span class="tag tr">إغلاق MV1</span></div><ul class="acts"><li><span class="bul bg">١</span>افتح <strong>SDV5</strong></li><li><span class="bul bc">٢</span><strong>LIC3</strong> أوتوماتيكي</li><li><span class="bul bg">٣</span>افتح <strong>SDV1</strong></li><li><span class="bul br">٤</span>أغلق <strong>Bypass MV1</strong></li></ul></div>
+<div class="slide" id="amine-ss18"><div class="bgnum">١٨</div><div class="s-meta">الخطوة ١٨ من ١٩</div><h2 class="s-head">زيادة معدل المادة المغذية وفتح SDV6</h2><div class="tags"><span class="tag tg">30 tn/hr كل دقيقة</span><span class="tag tg">SDV6</span></div><ul class="acts"><li><span class="bul bg">١</span>زِد <strong>30 tn/hr كل دقيقة</strong></li><li><span class="bul bg">٢</span>افتح <strong>SDV6</strong></li></ul></div>
+<div class="slide" id="amine-ss19"><div class="bgnum">١٩</div><div class="s-meta">الخطوة ١٩ من ١٩</div><h2 class="s-head">تحويل SIS إلى الأخضر</h2><div class="tags"><span class="tag tg">🟢 SIS</span></div><div class="wait cyan"><span class="wdot c"></span>انتظر استقرار الوحدة</div><p class="desc">حوّل <strong>SIS</strong> إلى <strong>الحالة الخضراء</strong>.</p></div>
+<div class="slide" id="amine-ssout"><div class="o-icon start">✅</div><h1 class="o-title">تمّ تشغيل<br><span class="gs">وحدة الأمين</span></h1><p class="o-sub">Startup Complete</p><div class="o-pills"><span class="opill">🟢 SIS أخضر</span><span class="opill">📋 ١٩ خطوة</span><span class="opill">🧪 الأمين</span></div></div>
+
+<!-- AMINE STOP -->
+<div class="slide" id="amine-sp0"><div class="i-eye stop">🔴 AMINE SHUTDOWN</div><h1 class="i-title">إيقاف وحدة<br><span class="gr">الأمين</span></h1><p class="i-sub">Amine Unit — Shutdown</p><div class="i-note stop"><span>⚠️</span><span>الالتزام بتسلسل الخطوات للسلامة التشغيلية</span></div></div>
+<div class="slide" id="amine-sp1"><div class="bgnum">١</div><div class="s-meta">الخطوة ١ من ١٤</div><h2 class="s-head">تفعيل نظام السلامة SIS</h2><div class="tags"><span class="tag tr">🔴 SIS</span></div><p class="desc">حوّل <strong>SIS</strong> إلى الحالة الحمراء.</p></div>
+<div class="slide" id="amine-sp2"><div class="bgnum">٢</div><div class="s-meta">الخطوة ٢ من ١٤</div><h2 class="s-head">تخفيض معدل المادة المغذية</h2><div class="tags"><span class="tag tr">إلى 30 tn/hr</span><span class="tag tm">20 tn/hr كل دقيقة</span></div><p class="desc">خفّض إلى <strong>30 طن/ساعة</strong> بمعدل <strong>20 طن كل دقيقة</strong>.</p></div>
+<div class="slide" id="amine-sp3"><div class="bgnum">٣</div><div class="s-meta">الخطوة ٣ من ١٤</div><h2 class="s-head">إغلاق SDV1 و SDV2</h2><div class="tags"><span class="tag tr">SDV1</span><span class="tag tr">SDV2</span></div><ul class="acts"><li><span class="bul br">١</span>أغلق <strong>SDV1</strong></li><li><span class="bul br">٢</span>أغلق <strong>SDV2</strong></li></ul></div>
+<div class="slide" id="amine-sp4"><div class="bgnum">٤</div><div class="s-meta">الخطوة ٤ من ١٤</div><h2 class="s-head">تخفيض PIC8 وإغلاق SDV6</h2><div class="tags"><span class="tag ty">PIC8 — 41 bar</span><span class="tag tr">SDV6</span></div><ul class="acts"><li><span class="bul by">١</span>خفّض <strong>PIC8</strong> إلى <strong>41 بار</strong></li><li><span class="bul br">٢</span>أغلق <strong>SDV6</strong></li></ul></div>
+<div class="slide" id="amine-sp5"><div class="bgnum">٥</div><div class="s-meta">الخطوة ٥ من ١٤</div><h2 class="s-head">تخفيض معدل جريان الأمين</h2><div class="tags"><span class="tag tr">10 tn/hr كل دقيقة</span><span class="tag tc">متابعة البرج</span></div><ul class="acts"><li><span class="bul br">١</span>خفّض الأمين إلى <strong>10 tn/hr</strong></li><li><span class="bul bc">٢</span>تابع مستوى <strong>برج إعادة التنشيط</strong></li></ul></div>
+<div class="slide" id="amine-sp6"><div class="bgnum">٦</div><div class="s-meta">الخطوة ٦ من ١٤</div><h2 class="s-head">إغلاق SDV4 ومتابعة LIC2</h2><div class="tags"><span class="tag tr">SDV4</span><span class="tag tc">LIC2 — 0%</span></div><ul class="acts"><li><span class="bul br">١</span>أغلق <strong>SDV4</strong></li><li><span class="bul bc">٢</span>لاحظ <strong>LIC2</strong> ستصبح <strong>0%</strong> تلقائياً</li></ul></div>
+<div class="slide" id="amine-sp7"><div class="bgnum">٧</div><div class="s-meta">الخطوة ٧ من ١٤</div><h2 class="s-head">إغلاق SDV3 و SDV5</h2><div class="tags"><span class="tag tr">SDV3</span><span class="tag tr">SDV5</span></div><ul class="acts"><li><span class="bul br">١</span>أغلق <strong>SDV3</strong></li><li><span class="bul br">٢</span>أغلق <strong>SDV5</strong></li></ul></div>
+<div class="slide" id="amine-sp8"><div class="bgnum">٨</div><div class="s-meta">الخطوة ٨ من ١٤</div><h2 class="s-head">تخفيض FIC3 وإغلاق SDV8</h2><div class="tags"><span class="tag ty">FIC3 — 1 tn/hr</span><span class="tag tr">SDV8</span></div><ul class="acts"><li><span class="bul by">١</span>خفّض <strong>FIC3</strong> إلى <strong>1 tn/hr</strong></li><li><span class="bul br">٢</span>أغلق <strong>SDV8</strong></li></ul></div>
+<div class="slide" id="amine-sp9"><div class="bgnum">٩</div><div class="s-meta">الخطوة ٩ من ١٤</div><h2 class="s-head">إغلاق SDV9</h2><div class="tags"><span class="tag tr">SDV9</span></div><p class="desc">أغلق صمام <strong>SDV9</strong>.</p></div>
+<div class="slide" id="amine-sp10"><div class="bgnum">١٠</div><div class="s-meta">الخطوة ١٠ من ١٤</div><h2 class="s-head">إيقاف المضخة عبر FIC7 وإغلاق SDV10</h2><div class="tags"><span class="tag ty">FIC7 — Manual — 100%</span><span class="tag tr">SDV10</span></div><ul class="acts"><li><span class="bul by">١</span><strong>FIC7</strong> على <strong>Manual — 100%</strong></li><li><span class="bul br">٢</span>أوقف المضخة</li><li><span class="bul br">٣</span>أغلق <strong>SDV10</strong></li></ul></div>
+<div class="slide" id="amine-sp11"><div class="bgnum">١١</div><div class="s-meta">الخطوة ١١ من ١٤</div><h2 class="s-head">إغلاق SDV11</h2><div class="tags"><span class="tag tr">SDV11</span></div><p class="desc">أغلق صمام <strong>SDV11</strong>.</p></div>
+<div class="slide" id="amine-sp12"><div class="bgnum">١٢</div><div class="s-meta">الخطوة ١٢ من ١٤</div><h2 class="s-head">إغلاق مبردات الهواء</h2><div class="tags"><span class="tag tr">Air Coolers</span></div><p class="desc">أغلق جميع <strong>مبردات الهواء</strong>.</p></div>
+<div class="slide" id="amine-sp13"><div class="bgnum">١٣</div><div class="s-meta">الخطوة ١٣ من ١٤</div><h2 class="s-head">إغلاق SDV7 و SDV11</h2><div class="tags"><span class="tag tr">SDV7</span><span class="tag tr">SDV11</span></div><ul class="acts"><li><span class="bul br">١</span>أغلق <strong>SDV7</strong></li><li><span class="bul br">٢</span>أغلق <strong>SDV11</strong></li></ul></div>
+<div class="slide" id="amine-sp14"><div class="bgnum">١٤</div><div class="s-meta">الخطوة ١٤ من ١٤</div><h2 class="s-head">ضبط FIC6 وإيقاف المضخة وإغلاق SDV12</h2><div class="tags"><span class="tag ty">FIC6 — Manual — 100%</span><span class="tag tr">SDV12</span></div><ul class="acts"><li><span class="bul by">١</span><strong>FIC6</strong> على <strong>Manual — 100%</strong></li><li><span class="bul br">٢</span>أوقف المضخة</li><li><span class="bul br">٣</span>أغلق <strong>SDV12</strong></li></ul></div>
+<div class="slide" id="amine-spout"><div class="o-icon stop">🔴</div><h1 class="o-title">تمّ إيقاف<br><span class="gr">وحدة الأمين</span></h1><p class="o-sub">Shutdown Complete</p><div class="o-pills"><span class="opill">🔴 SIS أحمر</span><span class="opill">📋 ١٤ خطوة</span><span class="opill">🧪 الأمين</span></div></div>
+
+<!-- LNG START -->
+<div class="slide" id="lng-ss0"><div class="i-eye start">🟢 LNG STARTUP</div><h1 class="i-title">تشغيل وحدة<br><span class="gs">LNG</span></h1><p class="i-sub">LNG Unit — Startup</p><div class="i-note start"><span>⚡</span><span>اتبع الخطوات بالتسلسل الصحيح</span></div></div>
+<div class="slide" id="lng-ss1"><div class="bgnum">١</div><div class="s-meta">الخطوة ١ من ١١</div><h2 class="s-head">تفعيل نظام السلامة SIS</h2><div class="tags"><span class="tag tr">🔴 SIS</span></div><p class="desc">حوّل <strong>SIS</strong> إلى الحالة الحمراء.</p></div>
+<div class="slide" id="lng-ss2"><div class="bgnum">٢</div><div class="s-meta">الخطوة ٢ من ١١</div><h2 class="s-head">تشغيل منظومة البروبلين</h2><div class="tags"><span class="tag ty">FIC96 — Manual — 25%</span><span class="tag ty">FIC97 — Manual — 25%</span><span class="tag tp">Propylene</span></div><ul class="acts"><li><span class="bul by">١</span><strong>FIC96</strong> و<strong>FIC97</strong> على <strong>Manual — 25%</strong></li><li><span class="bul bp">٢</span>شغّل الكابسة — من <strong>900 RPM</strong> زِد <strong>10%</strong> حتى <strong>1800 RPM</strong> عبر <strong>PIC112</strong></li><li><span class="bul bc">٣</span>عند الاستقرار ارجع المسيطرات والضغط إلى <strong>أوتو</strong></li></ul></div>
+<div class="slide" id="lng-ss3"><div class="bgnum">٣</div><div class="s-meta">الخطوة ٣ من ١١</div><h2 class="s-head">تشغيل منظومة الإيثيلين وتبريد الميثان</h2><div class="tags"><span class="tag tc">FIC239 — FIC240 — FIC255</span><span class="tag tp">Ethylene</span><span class="tag tg">FIC107</span></div><ul class="acts"><li><span class="bul by">١</span>مسيطرات <strong>239 و240 و255</strong> على <strong>Manual — 25%</strong></li><li><span class="bul bp">٢</span>شغّل الكابسة من <strong>3600</strong> إلى <strong>6000 RPM</strong> عبر <strong>PIC87</strong></li><li><span class="bul bc">٣</span>عند الاستقرار ارجع المسيطرات وحرارة <strong>244 و245</strong> إلى <strong>أوتو</strong></li><li><span class="bul bg">٤</span>شغّل تبريد الميثان من <strong>FIC107</strong></li></ul></div>
+<div class="slide" id="lng-ss4"><div class="bgnum">٤</div><div class="s-meta">الخطوة ٤ من ١١</div><h2 class="s-head">ضبط مسيطرات Cold Box</h2><div class="tags"><span class="tag tc">Cold Box</span><span class="tag tg">LIC — Auto</span><span class="tag tg">PIC — Auto</span></div><ul class="acts"><li><span class="bul bc">١</span>جميع <strong>LIC</strong> لجميع الـ Vessel على <strong>أوتو</strong></li><li><span class="bul bg">٢</span>تأكد من أن جميع <strong>PIC</strong> أوتوماتيكية</li></ul></div>
+<div class="slide" id="lng-ss5"><div class="bgnum">٥</div><div class="s-meta">الخطوة ٥ من ١١</div><h2 class="s-head">فتح SDV2 وزيادة معدل المادة المغذية</h2><div class="tags"><span class="tag tg">SDV2</span><span class="tag tg">حتى 100 tn/hr</span><span class="tag ty">20 bar</span><span class="tag tg">170 tn/hr</span></div><ul class="acts"><li><span class="bul bg">١</span>افتح <strong>SDV2</strong></li><li><span class="bul bg">٢</span>زِد <strong>20 tn/hr</strong> تدريجياً حتى <strong>100 tn/hr</strong></li><li><span class="bul bc">٣</span>انتظر وصول الضغط <strong>20 بار</strong></li><li><span class="bul bg">٤</span>ضع معدل المادة على <strong>170 tn/hr</strong></li></ul></div>
+<div class="slide" id="lng-ss6"><div class="bgnum">٦</div><div class="s-meta">الخطوة ٦ من ١١</div><h2 class="s-head">تهيئة برج الميثان</h2><div class="tags"><span class="tag tg">SDV100</span><span class="tag tc">LIC87 — Auto</span><span class="tag tg">المضخة</span></div><ul class="acts"><li><span class="bul bg">١</span>افتح <strong>SDV100</strong></li><li><span class="bul bc">٢</span><strong>LIC87</strong> أوتوماتيكي</li><li><span class="bul bg">٣</span>افتح الصمامات وشغّل المضخة</li></ul></div>
+<div class="slide" id="lng-ss7"><div class="bgnum">٧</div><div class="s-meta">الخطوة ٧ من ١١</div><h2 class="s-head">تهيئة LNG Export</h2><div class="tags"><span class="tag tc">PIC201 — Auto</span></div><p class="desc">ضع <strong>PIC201</strong> على وضع <strong>أوتوماتيكي</strong>.</p></div>
+<div class="slide" id="lng-ss8"><div class="bgnum">٨</div><div class="s-meta">الخطوة ٨ من ١١</div><h2 class="s-head">ضبط TIC205 و FIC205</h2><div class="tags"><span class="tag ty">TIC205 — Cascade</span><span class="tag tc">FIC205 — Auto</span></div><ul class="acts"><li><span class="bul by">١</span><strong>TIC205</strong> على <strong>Cascade</strong></li><li><span class="bul bc">٢</span>عند تكوّن المستوى — <strong>FIC205</strong> أوتوماتيكي</li></ul></div>
+<div class="slide" id="lng-ss9"><div class="bgnum">٩</div><div class="s-meta">الخطوة ٩ من ١١</div><h2 class="s-head">ضبط FIC63 وتهيئة مبادلة E9</h2><div class="tags"><span class="tag ty">FIC63 — Manual — 0%</span><span class="tag tg">E9</span><span class="tag tc">FIC63 — Auto</span><span class="tag tc">LIC63 — Cascade</span></div><ul class="acts"><li><span class="bul by">١</span><strong>FIC63</strong> على <strong>Manual — 0%</strong></li><li><span class="bul bg">٢</span>هيّئ مبادلة <strong>E9</strong> وافتح التبريد</li><li><span class="bul bc">٣</span>ارجع <strong>FIC63</strong> أوتو و<strong>LIC63</strong> Cascade</li></ul></div>
+<div class="slide" id="lng-ss10"><div class="bgnum">١٠</div><div class="s-meta">الخطوة ١٠ من ١١</div><h2 class="s-head">تهيئة الشاشة الأولى</h2><div class="tags"><span class="tag ty">PIC11 — 25%</span><span class="tag tg">SDV112</span><span class="tag tc">LIC13 — Auto</span><span class="tag tg">SDV22</span><span class="tag tc">FIC6 — Cascade</span><span class="tag tg">SDV14</span></div><ul class="acts"><li><span class="bul by">١</span><strong>PIC11</strong> فتحة <strong>25%</strong></li><li><span class="bul bg">٢</span>افتح <strong>SDV112</strong></li><li><span class="bul bc">٣</span><strong>LIC13</strong> أوتو وافتح <strong>SDV22</strong></li><li><span class="bul bc">٤</span><strong>FIC6</strong> على <strong>Cascade</strong></li><li><span class="bul bg">٥</span>افتح <strong>SDV14</strong></li></ul></div>
+<div class="slide" id="lng-ss11"><div class="bgnum">١١</div><div class="s-meta">الخطوة ١١ من ١١</div><h2 class="s-head">تشغيل المسخّنة عند تكوّن المستوى</h2><div class="tags"><span class="tag tc">Reboiler — Predemethanizer</span></div><div class="wait cyan"><span class="wdot c"></span>انتظر تكوّن المستوى في البرج</div><p class="desc">شغّل <strong>المسخّنة Reboiler</strong> لبرج <strong>Predemethanizer</strong>.</p></div>
+<div class="slide" id="lng-ssout"><div class="o-icon start">✅</div><h1 class="o-title">تمّ تشغيل<br><span class="gs">وحدة LNG</span></h1><p class="o-sub">Startup Complete</p><div class="o-pills"><span class="opill">🟢 SIS أخضر</span><span class="opill">📋 ١١ خطوة</span><span class="opill">❄️ LNG</span></div></div>
+
+<!-- LNG STOP -->
+<div class="slide" id="lng-sp0"><div class="i-eye stop">🔴 LNG SHUTDOWN</div><h1 class="i-title">إيقاف وحدة<br><span class="gr">LNG</span></h1><p class="i-sub">LNG Unit — Shutdown</p><div class="i-note stop"><span>⚠️</span><span>الالتزام بتسلسل الخطوات للسلامة التشغيلية</span></div></div>
+<div class="slide" id="lng-sp1"><div class="bgnum">١</div><div class="s-meta">الخطوة ١ من ١٣</div><h2 class="s-head">تفعيل نظام السلامة SIS</h2><div class="tags"><span class="tag tr">🔴 SIS</span></div><p class="desc">حوّل <strong>SIS</strong> إلى الحالة الحمراء.</p></div>
+<div class="slide" id="lng-sp2"><div class="bgnum">٢</div><div class="s-meta">الخطوة ٢ من ١٣</div><h2 class="s-head">فتح SDV2 وإغلاق SDV1 و SDV12</h2><div class="tags"><span class="tag tg">فتح SDV2</span><span class="tag tr">إغلاق SDV1</span><span class="tag tr">إغلاق SDV12</span></div><ul class="acts"><li><span class="bul bg">١</span>افتح <strong>SDV2</strong></li><li><span class="bul br">٢</span>أغلق <strong>SDV1</strong></li><li><span class="bul br">٣</span>أغلق <strong>SDV12</strong></li></ul></div>
+<div class="slide" id="lng-sp3"><div class="bgnum">٣</div><div class="s-meta">الخطوة ٣ من ١٣</div><h2 class="s-head">ضبط FIC6 وإغلاق Reboiler وSDV112</h2><div class="tags"><span class="tag ty">FIC6 — Manual — 50%</span><span class="tag tr">Reboiler</span><span class="tag tr">SDV112</span></div><ul class="acts"><li><span class="bul by">١</span><strong>FIC6</strong> على <strong>Manual — 50%</strong></li><li><span class="bul br">٢</span>أغلق <strong>Reboiler</strong> لبرج <strong>Predemethanizer</strong></li><li><span class="bul br">٣</span>أغلق <strong>SDV112</strong></li></ul></div>
+<div class="slide" id="lng-sp4"><div class="bgnum">٤</div><div class="s-meta">الخطوة ٤ من ١٣</div><h2 class="s-head">ضبط PIC11 و LIC13 وتفريغ الـ Vessel</h2><div class="tags"><span class="tag ty">PIC11 — Manual — 25%</span><span class="tag ty">LIC13 — Manual — 0%</span><span class="tag tr">SDV22</span><span class="tag tr">SDV14</span></div><ul class="acts"><li><span class="bul by">١</span><strong>PIC11</strong> على <strong>Manual — 25%</strong></li><li><span class="bul by">٢</span><strong>LIC13</strong> على <strong>Manual — 0%</strong></li><li><span class="bul br">٣</span>أغلق <strong>SDV22</strong></li><li><span class="bul bc">٤</span>انتظر تفريغ الـ <strong>Vessel</strong></li><li><span class="bul br">٥</span>أغلق <strong>SDV14</strong></li></ul></div>
+<div class="slide" id="lng-sp5"><div class="bgnum">٥</div><div class="s-meta">الخطوة ٥ من ١٣</div><h2 class="s-head">تصريف PIC11 من 10 بار إلى 0 بار</h2><div class="tags"><span class="tag ty">PIC11</span><span class="tag tc">10 bar</span><span class="tag tr">تصريف إلى 0</span></div><div class="wait gold"><span class="wdot g"></span>انتظر وصول PIC11 إلى 10 بار</div><ul class="acts"><li><span class="bul bg">١</span>افتح التصريف</li><li><span class="bul br">٢</span>عند <strong>0 بار</strong> أغلق المسيطر</li></ul></div>
+<div class="slide" id="lng-sp6"><div class="bgnum">٦</div><div class="s-meta">الخطوة ٦ من ١٣</div><h2 class="s-head">تقليل معدل جريان المادة المغذية</h2><div class="tags"><span class="tag tr">20 tn/hr كل دقيقة</span></div><p class="desc">قلّل معدل المادة المغذية بـ <strong>20 طن كل دقيقة</strong> تدريجياً.</p></div>
+<div class="slide" id="lng-sp7"><div class="bgnum">٧</div><div class="s-meta">الخطوة ٧ من ١٣</div><h2 class="s-head">وضع TIC205 و FIC205 على Manual</h2><div class="tags"><span class="tag ty">TIC205 — Manual</span><span class="tag ty">FIC205 — Manual</span></div><ul class="acts"><li><span class="bul by">١</span><strong>TIC205</strong> على <strong>Manual</strong></li><li><span class="bul by">٢</span><strong>FIC205</strong> على <strong>Manual</strong></li></ul></div>
+<div class="slide" id="lng-sp8"><div class="bgnum">٨</div><div class="s-meta">الخطوة ٨ من ١٣</div><h2 class="s-head">التحقق من فرق الضغط بين المسيطرات</h2><div class="tags"><span class="tag ty">PIC71</span><span class="tag ty">PIC23</span><span class="tag ty">PIC201</span><span class="tag tg">فرق 4 بار</span></div><p class="desc">تأكد من أن فرق الضغط بين <strong>PIC71</strong> و<strong>PIC23</strong> و<strong>PIC201</strong> يساوي <strong>4 بار</strong>.</p></div>
+<div class="slide" id="lng-sp9"><div class="bgnum">٩</div><div class="s-meta">الخطوة ٩ من ١٣</div><h2 class="s-head">عزل مبادلة E9 وضبط LIC87</h2><div class="tags"><span class="tag tr">عزل E9</span><span class="tag tg">MV197</span><span class="tag tr">MV195 — MV196</span><span class="tag ty">LIC87 — Manual — 0%</span></div><ul class="acts"><li><span class="bul br">١</span>اعزل مبادلة <strong>E9</strong></li><li><span class="bul bg">٢</span>افتح <strong>MV197</strong></li><li><span class="bul br">٣</span>أغلق <strong>MV195</strong> و<strong>MV196</strong></li><li><span class="bul by">٤</span><strong>LIC87</strong> على <strong>Manual — 0%</strong></li></ul></div>
+<div class="slide" id="lng-sp10"><div class="bgnum">١٠</div><div class="s-meta">الخطوة ١٠ من ١٣</div><h2 class="s-head">إغلاق المضخات وتفريغ Vessel لـ Cold Box</h2><div class="tags"><span class="tag tr">إغلاق المضخات</span><span class="tag tc">Cold Box</span><span class="tag ty">LIC — Manual — 25%</span></div><ul class="acts"><li><span class="bul br">١</span>أغلق المضخات والصمامات</li><li><span class="bul bc">٢</span>فرّغ الـ Vessel لمنظومة <strong>Cold Box</strong></li><li><span class="bul by">٣</span>جميع <strong>LIC</strong> على <strong>Manual — 25%</strong></li></ul></div>
+<div class="slide" id="lng-sp11"><div class="bgnum">١١</div><div class="s-meta">الخطوة ١١ من ١٣</div><h2 class="s-head">إغلاق تبريد الميثان وتصريف برج الميثان</h2><div class="tags"><span class="tag tc">PIC201 — 15 bar</span><span class="tag tc">PIC23 — أقل من 10 bar</span></div><div class="wait red"><span class="wdot r"></span>عند وصول PIC201 إلى 15 بار — أغلق تبريد الميثان</div><ul class="acts"><li><span class="bul bg">١</span>عند <strong>PIC23</strong> أقل من <strong>10 بار</strong> — افتح تصريف <strong>Vessel217</strong> وبرج الميثان</li></ul></div>
+<div class="slide" id="lng-sp12"><div class="bgnum">١٢</div><div class="s-meta">الخطوة ١٢ من ١٣</div><h2 class="s-head">إغلاق مضخة LNG Export و LCV117 و FIC107</h2><div class="tags"><span class="tag tr">LNG Export</span><span class="tag tr">LCV117</span><span class="tag tr">FIC107</span></div><ul class="acts"><li><span class="bul br">١</span>أغلق المضخة في <strong>LNG Export</strong></li><li><span class="bul br">٢</span>أغلق <strong>LCV117</strong></li><li><span class="bul br">٣</span>أغلق <strong>FIC107</strong></li></ul></div>
+<div class="slide" id="lng-sp13"><div class="bgnum">١٣</div><div class="s-meta">الخطوة ١٣ من ١٣</div><h2 class="s-head">إغلاق الكابسات K2 ثم K1</h2><div class="tags"><span class="tag tr">K2 — أولاً</span><span class="tag tr">K1 — ثانياً</span></div><ul class="acts"><li><span class="bul br">١</span>أغلق الكابسة <strong>K2</strong> أولاً</li><li><span class="bul br">٢</span>ثم أغلق الكابسة <strong>K1</strong></li></ul></div>
+<div class="slide" id="lng-spout"><div class="o-icon stop">🔴</div><h1 class="o-title">تمّ إيقاف<br><span class="gr">وحدة LNG</span></h1><p class="o-sub">Shutdown Complete</p><div class="o-pills"><span class="opill">🔴 SIS أحمر</span><span class="opill">📋 ١٣ خطوة</span><span class="opill">❄️ LNG</span></div></div>
+
+</div><!-- end slides -->
+
+<div class="prog"><div class="pf start" id="pf" style="width:0%"></div></div>
+<div class="dots" id="dots"></div>
+<div class="ctrl">
+  <button class="cb" onclick="prev()">◀ السابق</button>
+  <button class="cb play-start" id="pb" onclick="togglePlay()">▶ تشغيل تلقائي</button>
+  <button class="cb" onclick="next()">التالي ▶</button>
+</div>
+
+<script>
+const D={
+  lpg:{
+    start:{ids:['lpg-ss0','lpg-ss1','lpg-ss2','lpg-ss3','lpg-ss4','lpg-ss5','lpg-ss6','lpg-ss7','lpg-ss8','lpg-ss9','lpg-ss10','lpg-ss11','lpg-ssout'],sc:["بسم الله. أهلاً بكم في فيديو تشغيل وحدة غاز البترول المسال.","الخطوة الأولى: حوّل SIS إلى الحالة الحمراء.","الخطوة الثانية: تأكد من إغلاق جميع SDV وBDV لجميع الأبراج.","الخطوة الثالثة: تأكد من أن مسيطرات TIC للمسخّنات على فتحة صفر.","الخطوة الرابعة: مسيطرات FIC على Manual وفتحة مئة بالمئة.","الخطوة الخامسة: شغّل المضخة ثم حوّل FIC إلى أوتوماتيكي.","الخطوة السادسة: شغّل المبردات الهوائية لجميع الأبراج.","الخطوة السابعة: افتح صمامات SDV للخروج والتصدير لجميع الأبراج.","الخطوة الثامنة: انتظر إغلاق جميع PCV تلقائياً.","الخطوة التاسعة: افتح SDV-66 ثم SDV-67.","الخطوة العاشرة: حوّل جميع مسيطرات TIC إلى أوتوماتيكي.","الخطوة الحادية عشرة: عند استقرار الوحدة حوّل SIS إلى الحالة الخضراء.","تهانينا. اكتمل تشغيل وحدة LPG بنجاح."]},
+    stop:{ids:['lpg-sp0','lpg-sp1','lpg-sp2','lpg-sp3','lpg-sp4','lpg-sp5','lpg-sp6','lpg-sp7','lpg-spout'],sc:["أهلاً بكم. إجراءات إيقاف وحدة LPG.","الخطوة الأولى: حوّل SIS إلى الحالة الحمراء.","الخطوة الثانية: أغلق SDV-66 ثم SDV-67.","الخطوة الثالثة: FIC-11 على Manual مئة بالمئة ثم أوقف المضخة.","الخطوة الرابعة: بعد إغلاق LCV-15 أغلق SDV-16. TIC-26 على Manual صفر.","الخطوة الخامسة: انتظر إغلاق LCV-28، أغلق SDV-38، TIC-39 على Manual صفر.","الخطوة السادسة: انتظر PCV-27، FIC-32 مئة بالمئة، أوقف المضخة، أغلق SDV-35.","الخطوة السابعة: طبّق نفس الخطة على الأبراج المتبقية.","تهانينا. اكتمل إيقاف وحدة LPG بنجاح."]}
+  },
+  amine:{
+    start:{ids:['amine-ss0','amine-ss1','amine-ss2','amine-ss3','amine-ss4','amine-ss5','amine-ss6','amine-ss7','amine-ss8','amine-ss9','amine-ss10','amine-ss11','amine-ss12','amine-ss13','amine-ss14','amine-ss15','amine-ss16','amine-ss17','amine-ss18','amine-ss19','amine-ssout'],sc:["بسم الله. أهلاً بكم في فيديو تشغيل وحدة الأمين.","الخطوة الأولى: حوّل SIS إلى الحالة الحمراء.","الخطوة الثانية: تأكد من أن معدل المادة المغذية أقل من ثلاثين طناً.","الخطوة الثالثة: تأكد من إغلاق SDV وBDV في جميع الشاشات.","الخطوة الرابعة: جميع LIC وFIC على Manual وفتحة صفر. PIC تبقى أوتوماتيكية.","الخطوة الخامسة: افتح SDV9 وضع FIC4 أوتوماتيكي بعشرين طناً.","الخطوة السادسة: انتظر Amine Flash Tank ستين بالمئة ثم FIC4 على Manual صفر.","الخطوة السابعة: افتح SDV7، LIC5 على Manual، واضبط نقطة تحديد معدل جريان الأمين عشرين طناً.","الخطوة الثامنة: LIC5 أوتوماتيكي مع فتحة خمسين بالمئة.","الخطوة التاسعة: FIC7 Manual صفر، افتح SDV10، شغّل المضخة، FIC7 أوتو.","الخطوة العاشرة: افتح SDV8، FIC3 أوتو عشرة طن، افتح Bypass MV1، افتح SDV2.","الخطوة الحادية عشرة: PIC8 على واحد وأربعين بار، انتظر تساوي الضغط، افتح SDV4 واضبط FIC2.","الخطوة الثانية عشرة: افتح SDV3، LIC2 أوتو، زِد الأمين عشرة طن كل دقيقة حتى ثلاثمئة.","الخطوة الثالثة عشرة: TIC3 أوتو، شغّل المبردات، افتح SDV11.","الخطوة الرابعة عشرة: TIC2 Manual صفر، FIC5 على Cascade.","الخطوة الخامسة عشرة: افتح SDV12، FIC6 أوتو، شغّل المضخة.","الخطوة السادسة عشرة: TIC2 ثم LIC6 ثم TIC1 أوتوماتيكي.","الخطوة السابعة عشرة: افتح SDV5، LIC3 أوتو، افتح SDV1، أغلق Bypass MV1.","الخطوة الثامنة عشرة: زِد المادة المغذية ثلاثين طناً كل دقيقة وافتح SDV6.","الخطوة التاسعة عشرة: عند استقرار الوحدة حوّل SIS إلى الحالة الخضراء.","تهانينا. اكتمل تشغيل وحدة الأمين بنجاح."]},
+    stop:{ids:['amine-sp0','amine-sp1','amine-sp2','amine-sp3','amine-sp4','amine-sp5','amine-sp6','amine-sp7','amine-sp8','amine-sp9','amine-sp10','amine-sp11','amine-sp12','amine-sp13','amine-sp14','amine-spout'],sc:["أهلاً بكم. إجراءات إيقاف وحدة الأمين.","الخطوة الأولى: حوّل SIS إلى الحالة الحمراء.","الخطوة الثانية: خفّض المادة المغذية إلى ثلاثين طناً بمعدل عشرين طناً كل دقيقة.","الخطوة الثالثة: أغلق SDV1 ثم SDV2.","الخطوة الرابعة: خفّض PIC8 إلى واحد وأربعين بار ثم أغلق SDV6.","الخطوة الخامسة: خفّض الأمين إلى عشرة طن كل دقيقة. تابع مستوى برج إعادة التنشيط.","الخطوة السادسة: أغلق SDV4. لاحظ LIC2 ستصبح صفراً تلقائياً.","الخطوة السابعة: أغلق SDV3 ثم SDV5.","الخطوة الثامنة: خفّض FIC3 إلى طن واحد ثم أغلق SDV8.","الخطوة التاسعة: أغلق SDV9.","الخطوة العاشرة: FIC7 Manual مئة بالمئة، أوقف المضخة، أغلق SDV10.","الخطوة الحادية عشرة: أغلق SDV11.","الخطوة الثانية عشرة: أغلق مبردات الهواء.","الخطوة الثالثة عشرة: أغلق SDV7 ثم SDV11.","الخطوة الرابعة عشرة: FIC6 Manual مئة بالمئة، أوقف المضخة، أغلق SDV12.","تهانينا. اكتمل إيقاف وحدة الأمين بنجاح."]}
+  },
+  lng:{
+    start:{ids:['lng-ss0','lng-ss1','lng-ss2','lng-ss3','lng-ss4','lng-ss5','lng-ss6','lng-ss7','lng-ss8','lng-ss9','lng-ss10','lng-ss11','lng-ssout'],sc:["بسم الله. أهلاً بكم في فيديو تشغيل وحدة LNG.","الخطوة الأولى: حوّل SIS إلى الحالة الحمراء.","الخطوة الثانية: تشغيل البروبلين. FIC96 وFIC97 على Manual وفتحة 25 بالمئة. شغّل الكابسة ومن 900 دورة زِد 10 بالمئة حتى 1800 دورة عبر PIC112. عند الاستقرار ارجع المسيطرات أوتو.","الخطوة الثالثة: تشغيل الإيثيلين. المسيطرات 239 و240 و255 على Manual 25 بالمئة. شغّل الكابسة من 3600 إلى 6000 دورة عبر PIC87. عند الاستقرار ارجع المسيطرات وحرارة 244 و245 أوتو. شغّل تبريد الميثان من FIC107.","الخطوة الرابعة: من شاشة Cold Box، جميع LIC على أوتو. تأكد PIC أوتوماتيكية.","الخطوة الخامسة: افتح SDV2، زِد عشرين طناً حتى مئة طن. انتظر ضغط عشرين بار ثم ضع المعدل مئة وسبعين طناً.","الخطوة السادسة: افتح SDV100، LIC87 أوتو، افتح الصمامات وشغّل المضخة.","الخطوة السابعة: PIC201 أوتوماتيكي.","الخطوة الثامنة: TIC205 على Cascade. عند تكوّن المستوى FIC205 أوتوماتيكي.","الخطوة التاسعة: FIC63 Manual صفر. هيّئ مبادلة E9 وافتح التبريد. ارجع FIC63 أوتو وLIC63 Cascade.","الخطوة العاشرة: PIC11 فتحة 25 بالمئة، افتح SDV112، LIC13 أوتو، افتح SDV22، FIC6 Cascade، افتح SDV14.","الخطوة الحادية عشرة: انتظر تكوّن المستوى في البرج ثم شغّل المسخّنة Reboiler لبرج Predemethanizer.","تهانينا. اكتمل تشغيل وحدة LNG بنجاح."]},
+    stop:{ids:['lng-sp0','lng-sp1','lng-sp2','lng-sp3','lng-sp4','lng-sp5','lng-sp6','lng-sp7','lng-sp8','lng-sp9','lng-sp10','lng-sp11','lng-sp12','lng-sp13','lng-spout'],sc:["أهلاً بكم. إجراءات إيقاف وحدة LNG.","الخطوة الأولى: حوّل SIS إلى الحالة الحمراء.","الخطوة الثانية: افتح SDV2، أغلق SDV1، أغلق SDV12.","الخطوة الثالثة: FIC6 Manual خمسين بالمئة. أغلق Reboiler لبرج Predemethanizer. أغلق SDV112.","الخطوة الرابعة: PIC11 Manual 25 بالمئة. LIC13 Manual صفر. أغلق SDV22، انتظر تفريغ الـ Vessel، أغلق SDV14.","الخطوة الخامسة: عند PIC11 عشرة بار افتح التصريف. عند صفر بار أغلق المسيطر.","الخطوة السادسة: قلّل المادة المغذية عشرين طناً كل دقيقة.","الخطوة السابعة: TIC205 وFIC205 على Manual.","الخطوة الثامنة: تأكد من فرق الضغط أربعة بار بين PIC71 وPIC23 وPIC201.","الخطوة التاسعة: اعزل E9، افتح MV197، أغلق MV195 وMV196، LIC87 Manual صفر.","الخطوة العاشرة: أغلق المضخات، فرّغ الـ Vessel لـ Cold Box، جميع LIC Manual 25 بالمئة.","الخطوة الحادية عشرة: عند PIC201 خمسة عشر بار أغلق تبريد الميثان. عند PIC23 أقل من عشرة بار افتح تصريف Vessel217.","الخطوة الثانية عشرة: أغلق مضخة LNG Export وLCV117 وFIC107.","الخطوة الثالثة عشرة: أغلق الكابسة K2 أولاً ثم K1.","تهانينا. اكتمل إيقاف وحدة LNG بنجاح."]}
+  }
+};
+
+let unit='lpg',mode='start',cur=0,auto=false,timer=null,synth=window.speechSynthesis;
+let currentAudio = null;
+
+const gi=()=>D[unit][mode].ids;
+const gs=()=>D[unit][mode].sc;
+
+function setUnit(u){
+  stopAll();unit=u;cur=0;
+  ['lpg','amine','lng'].forEach(x=>document.getElementById('btn-'+x).classList.remove('active'));
+  document.getElementById('btn-'+u).classList.add('active');
+  buildDots();show(0);
+}
+
+function setMode(m){
+  stopAll();mode=m;cur=0;
+  document.getElementById('btnStart').classList.toggle('active',m==='start');
+  document.getElementById('btnStop').classList.toggle('active',m==='stop');
+  document.getElementById('bgGlow').className='bg-glow '+m;
+  document.getElementById('pf').className='pf '+m;
+  document.getElementById('wv').className='wave '+m;
+  document.getElementById('pb').className='cb play-'+m;
+  buildDots();show(0);
+}
+
+function buildDots(){
+  const d=document.getElementById('dots');d.innerHTML='';
+  gi().forEach((_,i)=>{const e=document.createElement('div');e.className='dn';e.onclick=()=>goTo(i);d.appendChild(e);});
+  updDots();
+}
+
+function updDots(){
+  const c='act-'+mode;
+  document.querySelectorAll('.dn').forEach((d,i)=>{d.classList.remove('act-start','act-stop');if(i===cur)d.classList.add(c);});
+  const l=gi().length;
+  document.getElementById('pf').style.width=(l>1?(cur/(l-1)*100):0)+'%';
+}
+
+function show(i){
+  document.querySelectorAll('.slide').forEach(s=>s.classList.remove('active'));
+  document.getElementById(gi()[i]).classList.add('active');
+  cur=i;updDots();
+}
+
+function goTo(i){if(i<0||i>=gi().length)return;stopS();show(i);if(auto)speak(i);}
+function next(){if(cur<gi().length-1)goTo(cur+1);else if(auto)stopAuto();}
+function prev(){if(cur>0)goTo(cur-1);}
+function togglePlay(){auto?stopAuto():startAuto();}
+function startAuto(){auto=true;document.getElementById('pb').textContent='⏸ إيقاف مؤقت';speak(cur);}
+function stopAuto(){auto=false;clearTimeout(timer);stopS();document.getElementById('pb').textContent='▶ تشغيل تلقائي';}
+function stopAll(){stopAuto();}
+
+function speak(i){
+  stopS();
+  const sc=gs();
+  if(!sc[i]) return;
+  
+  const text = sc[i];
+  const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=ar&client=tw-ob`;
+  currentAudio = new Audio(url);
+  
+  const wv = document.getElementById('wv');
+  
+  currentAudio.onplay = () => wv.classList.add('on');
+  currentAudio.onended = () => {
+     wv.classList.remove('on');
+     if(auto){
+         timer = setTimeout(() => {
+             if(cur < gi().length - 1){ goTo(cur+1); }
+             else { stopAuto(); }
+         }, 700);
+     }
+  };
+  
+  currentAudio.onerror = () => { fallbackLocalTTS(text, i); };
+  
+  currentAudio.play().catch(e => { fallbackLocalTTS(text, i); });
+}
+
+function fallbackLocalTTS(text, i) {
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ar-SA';
+  u.rate = 0.88;
+  const wv = document.getElementById('wv');
+  u.onstart = () => wv.classList.add('on');
+  u.onend = () => {
+     wv.classList.remove('on');
+     if(auto){
+         timer = setTimeout(() => {
+             if(cur < gi().length - 1){ goTo(cur+1); }
+             else { stopAuto(); }
+         }, 700);
+     }
+  };
+  synth.speak(u);
+}
+
+function stopS(){
+  if(currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+  }
+  synth.cancel();
+  document.getElementById('wv').classList.remove('on');
+  clearTimeout(timer);
+}
+
+function loadVoices(){
+  const sel=document.getElementById('vsel');
+  sel.innerHTML='<option>صوت Google (سحابي)</option>';
+}
+loadVoices();
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight')next();
+  if(e.key==='ArrowLeft')prev();
+  if(e.key===' '){e.preventDefault();togglePlay();}
+});
+
+buildDots();
+</script>
+</body>
+</html>
